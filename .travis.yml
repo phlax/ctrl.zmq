@@ -1,0 +1,23 @@
+# https://travis-ci.org/#!/phlax/ctrl.zmq
+dist: trusty
+language: python
+python:
+  - "3.5"
+
+install:
+
+  - git clone https://github.com/phlax/ctrl.core
+  - cd ctrl.core && pip install -e . && cd ..
+
+  - git clone https://github.com/phlax/ctrl.command
+  - cd ctrl.command && pip install -e . && cd ..
+
+  - git clone https://github.com/phlax/ctrl.config
+  - cd ctrl.config && pip install -e . && cd ..
+
+  - pip install -e .
+  - pip install ctrl.zmq[test]
+
+script:
+
+  - flake8 .
