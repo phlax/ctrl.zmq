@@ -3,6 +3,7 @@ from zope import interface
 
 from ctrl.command.interfaces import ISubcommand
 
+from .pubsub import ZMQPublisher
 from .rpc import ZMQRPCClient
 
 
@@ -17,5 +18,8 @@ class ZMQSubcommand(object):
 
     async def handle_rpc(self, loop, server_addr, command, *args):
         client = ZMQRPCClient(loop, server_addr)
-        response = await client.handle(command, *args)
-        print(response)
+        return await client.handle(command, *args)
+
+    async def handle_publish(self, loop, server_addr, command, *args):
+        client = ZMQPublisher(loop, server_addr)
+        return await client.handle(command, *args)
