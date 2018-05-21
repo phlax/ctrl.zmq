@@ -1,47 +1,35 @@
 
-import aiozmq.rpc
+import asyncio
+
+import zmq
+
+from .base import ZMQClient, ZMQService
 
 
-class SubscriptionHandler(aiozmq.rpc.AttrHandler):
+class ZMQSubscriber(ZMQService):
+    protocol = zmq.SUB
 
-    def __init__(self):
-        self.connected = False
+    async def run(self, subscribe, *args):
+        self.sock.setsockopt_string(zmq.SUBSCRIBE, subscribe)
+        asyncio.ensure_future(self.handle())
+        return 'Subscribed %s (%s)' % (subscribe, self)
 
-    @aiozmq.rpc.method
-    def service_stopped(self, service: str):
-        self.connected = True
-        print('STOPPED:', service)
-
-
-class ZMQSubscriber(object):
-
-    def __init__(self, loop, server_addr):
-        self.loop = loop
-        self.server_addr = server_addr
-
-    async def handle(self, subscribe, *args):
-        await aiozmq.rpc.serve_pubsub(
-            SubscriptionHandler(),
-            subscribe=subscribe,
-            bind=self.server_addr,
-            log_exceptions=True)
-        return (
-            'Subscription (%s) started: %s'
-            % (subscribe, self.server_addr))
+    async def handle(self, *args):
+        recv = await self.sock.recv_multipart()
+        subscription = recv[0].split()[0]
+        msg = ' '.join(recv[0].decode('utf-8').split()[1:])
+        print("Received (%s): %s" % (subscription, msg))
+        asyncio.ensure_future(self.handle())
 
 
-class ZMQPublisher(object):
-
-    def __init__(self, loop, server_addr):
-        self.loop = loop
-        self.server_addr = server_addr
-
-    async def handle(self, command, *args):
-        return await getattr(self, 'handle_%s' % command)(*args)
+class ZMQPublisher(ZMQClient):
+    protocol = zmq.PUB
+    wait_on_start = .1
 
     async def handle_service_stopped(self, subscription, service, *args):
-        client = await aiozmq.rpc.connect_pubsub(connect=self.server_addr)
-        await client.publish(subscription).service_stopped(service)
+        await self.sock.send_multipart(
+            [("%s service_stopped %s"
+              % (subscription, service)).encode("utf-8")])
         return (
-            'Published service_stopped:%s (%s) to: %s'
-            % (service, subscription, self.server_addr))
+            'Published service_stopped %s %s/%s'
+            % (service, self.server_addr,  subscription))

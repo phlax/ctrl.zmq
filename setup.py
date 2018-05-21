@@ -10,7 +10,7 @@ from setuptools import setup
 install_requires = [
     'ctrl.core',
     'ctrl.command',
-    'aiozmq']
+    'pyzmq']
 
 extras_require = {}
 extras_require['test'] = [
