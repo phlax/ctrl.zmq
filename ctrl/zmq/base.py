@@ -8,9 +8,10 @@ import zmq.asyncio
 class ZMQService(object):
     bind = True
 
-    def __init__(self, loop, server_addr):
+    def __init__(self, zmqid, server_addr, loop=None):
+        self.zmqid = zmqid
         self._started = False
-        self.loop = loop
+        self.loop = loop or asyncio.get_event_loop()
         self.server_addr = server_addr
         self.ctx = zmq.asyncio.Context()
         self.sock = self.get_socket(self.ctx)
@@ -24,10 +25,11 @@ class ZMQService(object):
 
     def __str__(self):
         return (
-            '<%s (%s) />'
+            '<%s::%s (%s) />'
             % ('.'.join(
                 [self.__module__,
                  self.__class__.__name__]),
+               self.zmqid,
                self.server_addr))
 
     def set_socket_options(self, socket):
