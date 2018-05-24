@@ -22,6 +22,14 @@ class ZMQReplyEvent(ZMQEvent):
     pass
 
 
+class ZMQPushEvent(ZMQEvent):
+    pass
+
+
+class ZMQPullEvent(ZMQEvent):
+    pass
+
+
 class ZMQSubscriberEvent(ZMQEvent):
 
     def __init__(self, zmqid, subscription, message):
