@@ -1,6 +1,5 @@
 
 import asyncio
-import functools
 
 from zope import component
 from zope import interface
@@ -22,7 +21,7 @@ class ZMQRPCServer(ZMQService):
         recv = await self.sock.recv_multipart()
         handler = component.queryAdapter(self, IZMQRPCReply, self.zmqid)
         response = (
-            await handler.respond(recv)
+            await handler.reply(recv)
             if handler
             else '')
         self.sock.send_multipart([response.encode('utf-8')])
@@ -31,10 +30,6 @@ class ZMQRPCServer(ZMQService):
 
 class ZMQRPCClient(ZMQClient):
     protocol = zmq.REQ
-
-    async def handle_rpc_reply(self, uuid, reply):
-        print('Got response: %s' % reply)
-        zope.event.notify(ZMQReplyEvent(self.zmqid, reply, uuid=uuid))
 
     def handle_rpc_request(self, event, uuid=None):
         if event.zmqid == self.zmqid:
@@ -45,11 +40,15 @@ class ZMQRPCClient(ZMQClient):
                 self.sock.send_multipart(
                     [event.message.encode('utf-8')]))
 
+            def _handle_reply(cb):
+                reply = cb.result()
+                print('Got response: %s' % reply)
+                zope.event.notify(ZMQReplyEvent(self.zmqid, reply, uuid=uuid))
+
             def _reply(result):
                 future_reply = asyncio.ensure_future(
                     self.sock.recv_multipart())
-                future_reply.add_done_callback(
-                    functools.partial(self.handle_rpc_reply, uuid))
+                future_reply.add_done_callback(_handle_reply)
             future_sent.add_done_callback(_reply)
 
     async def handle(self, *args):

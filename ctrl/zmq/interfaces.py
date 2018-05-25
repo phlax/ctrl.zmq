@@ -8,5 +8,5 @@ class IZMQRPCServer(Interface):
 
 class IZMQRPCReply(Interface):
 
-    async def respond(socket, recv):
+    async def reply(socket, recv):
         pass
