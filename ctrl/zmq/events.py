@@ -19,7 +19,11 @@ class ZMQRequestEvent(ZMQEvent):
 
 
 class ZMQReplyEvent(ZMQEvent):
-    pass
+
+    def __init__(self, zmqid, message, uuid=None):
+        self.zmqid = zmqid
+        self.message = message
+        self.uuid = uuid
 
 
 class ZMQPushEvent(ZMQEvent):
