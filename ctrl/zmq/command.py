@@ -1,7 +1,7 @@
 
 from zope import interface
 
-from ctrl.command.interfaces import ISubcommand
+from ctrl.core.interfaces import ISubcommand
 
 from .pubsub import ZMQPublisher
 from .rpc import ZMQRPCClient

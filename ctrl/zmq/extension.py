@@ -1,7 +1,7 @@
 
 from zope import component
 
-from ctrl.command.interfaces import ICommandRunner, ISubcommand
+from ctrl.core.interfaces import ICommandRunner, ISubcommand
 
 from .command import ZMQSubcommand
 
