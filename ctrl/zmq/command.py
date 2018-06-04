@@ -48,7 +48,7 @@ class ZMQSubcommand(object):
         return await getattr(self, 'handle_%s' % command)(*args, loop=loop)
 
     async def handle_rpc(self, server_addr, command, *args, loop=None):
-        client = ZMQRPCClient(loop, server_addr)
+        client = ZMQRPCClient('rpc', server_addr)
         return await client.handle(command, *args)
 
     async def handle_publish(self, server_addr, command, *args, loop=None):
